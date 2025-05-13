@@ -682,7 +682,7 @@
 
 .footer {
     background: #e1ede6;
-    max-height: 319px;
+    max-height: 100%;
 }
 
 .footer__inner {
@@ -762,5 +762,8 @@
 }
 
 .adaptive__social {
+    display: none;
+}
+.footer__mobile{
     display: none;
 }
