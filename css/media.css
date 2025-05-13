@@ -617,7 +617,7 @@
     }
 
     .reproductions__tab-buttons {
-        display: none !important;
+        display: none ;
         /* Скрываем оригинальные кнопки */
     }
 
@@ -628,7 +628,7 @@
     }
 
     .swiper-wrapper {
-        display: flex;
+        display: flex !important;
         width: auto;
     }
 
@@ -658,9 +658,15 @@
         gap: 29px;
     }
 }
-
+@media (max-width:375px) {
+    .burger-menu{
+        margin-right: 300px;
+        top: 1px;
+    }
+}
 @media (max-width:340px) {
     .burger-menu{
         margin-right: 250px;
     }
 }
+
