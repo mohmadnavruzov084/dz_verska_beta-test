@@ -140,65 +140,108 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ////////////////////////////////////Слайдер//////////////////////////////////////////////////////////////////
-
-// Табы
 document.addEventListener("DOMContentLoaded", function() {
-  const tabButtons = document.querySelectorAll(".reproductions__tab-btn");
-  const tabContents = document.querySelectorAll(".tab-content");
+  // Функция переключения табов
+  function switchTab(tabId, clickedButton = null) {
+    // Обновляем классы для всех кнопок (оригинальных и в Swiper)
+    document.querySelectorAll(".reproductions__tab-btn").forEach(btn => {
+      btn.classList.remove("active-tab");
+      if (btn.dataset.tab === tabId) {
+        btn.classList.add("active-tab");
+      }
+    });
+    
+    // Обновляем контент табов
+    document.querySelectorAll(".tab-content").forEach(content => {
+      content.classList.remove("active-tab");
+      if (content.id === tabId) {
+        content.classList.add("active-tab");
+      }
+    });
+    
+    // Если клик был по кнопке в Swiper, прокручиваем к ней
+    if (clickedButton && clickedButton.closest('.swiper-slide')) {
+      const swiper = document.querySelector('.swiper-container').swiper;
+      const slideIndex = Array.from(clickedButton.closest('.swiper-wrapper').children)
+        .indexOf(clickedButton.closest('.swiper-slide'));
+      swiper.slideTo(slideIndex);
+    }
+  }
 
-  tabButtons.forEach(button => {
-    button.addEventListener("click", () => {
-      const tabId = button.dataset.tab;
-      
-      // Удаляем активные классы
-      tabButtons.forEach(btn => btn.classList.remove("active-tab"));
-      tabContents.forEach(content => content.classList.remove("active-tab"));
-      
-      // Добавляем активные классы
-      button.classList.add("active-tab");
-      document.getElementById(tabId).classList.add("active-tab");
+  // Добавляем обработчики для оригинальных кнопок
+  document.querySelectorAll(".reproductions__tab-btn").forEach(button => {
+    button.addEventListener("click", function() {
+      switchTab(this.dataset.tab, this);
     });
   });
 
-  // Инициализация Swiper только на мобильных
+  // Инициализация Swiper для мобильных
   function initMobileSlider() {
     if (window.innerWidth <= 430) {
-      if (!document.querySelector(".swiper-container")) {
-        const buttonsContainer = document.querySelector(".reproductions__tab-buttons");
-        const buttons = Array.from(buttonsContainer.querySelectorAll(".reproductions__tab-btn"));
+      const buttonsContainer = document.querySelector(".reproductions__tab-buttons");
+      if (!buttonsContainer || document.querySelector(".swiper-container")) return;
+
+      const buttons = Array.from(buttonsContainer.querySelectorAll(".reproductions__tab-btn"));
+      
+      const swiperContainer = document.createElement("div");
+      swiperContainer.className = "swiper-container";
+      
+      const swiperWrapper = document.createElement("div");
+      swiperWrapper.className = "swiper-wrapper";
+      
+      buttons.forEach(button => {
+        const slide = document.createElement("div");
+        slide.className = "swiper-slide";
+        const buttonClone = button.cloneNode(true);
         
-        const swiperContainer = document.createElement("div");
-        swiperContainer.className = "swiper-container";
-        
-        const swiperWrapper = document.createElement("div");
-        swiperWrapper.className = "swiper-wrapper";
-        
-        buttons.forEach(button => {
-          const slide = document.createElement("div");
-          slide.className = "swiper-slide";
-          slide.appendChild(button.cloneNode(true));
-          swiperWrapper.appendChild(slide);
+        // Добавляем обработчик для клонированной кнопки
+        buttonClone.addEventListener("click", function() {
+          switchTab(this.dataset.tab, this);
         });
         
-        swiperContainer.appendChild(swiperWrapper);
-        buttonsContainer.parentNode.insertBefore(swiperContainer, buttonsContainer.nextSibling);
-        
-        new Swiper(".swiper-container", {
-          slidesPerView: "auto",
-          spaceBetween: 10,
-          freeMode: true
-        });
-      }
+        slide.appendChild(buttonClone);
+        swiperWrapper.appendChild(slide);
+      });
+      
+      swiperContainer.appendChild(swiperWrapper);
+      buttonsContainer.parentNode.insertBefore(swiperContainer, buttonsContainer.nextSibling);
+      
+      // Инициализируем Swiper
+      const swiper = new Swiper(".swiper-container", {
+        slidesPerView: "auto",
+        spaceBetween: 10,
+        freeMode: true
+      });
+      
+      // Скрываем оригинальные кнопки
+      buttonsContainer.style.display = "none";
+      
+      return swiper;
     } else {
       const swiper = document.querySelector(".swiper-container");
-      if (swiper) swiper.remove();
+      const buttonsContainer = document.querySelector(".reproductions__tab-buttons");
+      
+      if (swiper) {
+        swiper.remove();
+      }
+      if (buttonsContainer) {
+        buttonsContainer.style.display = "flex";
+      }
+      return null;
     }
   }
-  
+
+  // Активируем первый таб по умолчанию
+  const firstTabButton = document.querySelector(".reproductions__tab-btn");
+  if (firstTabButton) {
+    switchTab(firstTabButton.dataset.tab);
+  }
+
   // Инициализация при загрузке
-  initMobileSlider();
+  let swiperInstance = initMobileSlider();
   
   // Реинициализация при изменении размера
-  window.addEventListener("resize", initMobileSlider);
+  window.addEventListener("resize", function() {
+    swiperInstance = initMobileSlider();
+  });
 });
-
